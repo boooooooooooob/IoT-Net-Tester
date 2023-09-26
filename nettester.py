@@ -2,7 +2,7 @@ import wx
 import requests
 import time
 import paho.mqtt.client as mqtt
-import payload_pb2
+import event_pb2
 
 class PerformanceTester(wx.Frame):
     def __init__(self):
@@ -12,8 +12,10 @@ class PerformanceTester(wx.Frame):
         self.notebook = wx.Notebook(self.panel)
         self.create_https_page()
         self.create_mqtt_page()
+        self.create_protobuf_page()
         self.notebook.AddPage(self.https_panel, "HTTPS")
         self.notebook.AddPage(self.mqtt_panel, "MQTT")
+        self.notebook.AddPage(self.protobuf_panel, "Protobuf")
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.notebook, 1, wx.ALL | wx.EXPAND, 5)
         self.panel.SetSizer(sizer)
@@ -103,6 +105,66 @@ class PerformanceTester(wx.Frame):
 
         self.mqtt_panel.SetSizer(sizer)
 
+    def create_protobuf_page(self):
+        self.protobuf_panel = wx.Panel(self.notebook)
+
+        self.json_input_label = wx.StaticText(self.protobuf_panel, label="Input JSON:")
+        self.json_input_text = wx.TextCtrl(self.protobuf_panel, style=wx.TE_MULTILINE | wx.HSCROLL, size=(300, 200))
+
+        self.convert_button = wx.Button(self.protobuf_panel, label="Convert to Protobuf")
+        self.convert_button.Bind(wx.EVT_BUTTON, self.convert_json_to_protobuf)
+
+        self.protobuf_output_label = wx.StaticText(self.protobuf_panel, label="Compressed Protobuf:")
+        self.protobuf_output_text = wx.TextCtrl(self.protobuf_panel, style=wx.TE_MULTILINE | wx.HSCROLL | wx.TE_READONLY, size=(300, 200))
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.json_input_label, 0, wx.ALL, 5)
+        sizer.Add(self.json_input_text, 0, wx.ALL | wx.EXPAND, 5)
+        sizer.Add(self.convert_button, 0, wx.ALL, 5)
+        sizer.Add(self.protobuf_output_label, 0, wx.ALL, 5)
+        sizer.Add(self.protobuf_output_text, 0, wx.ALL | wx.EXPAND, 5)
+
+        self.protobuf_panel.SetSizer(sizer)
+
+    def convert_json_to_protobuf(self, event):
+        import json
+
+        raw_data = self.json_input_text.GetValue()
+
+        try:
+            # Parse the JSON input
+            event_data = json.loads(raw_data)
+
+            event = event_pb2.Event()
+
+            # Populate header
+            event.header.event_type = event_data["header"]["event_type"]
+            event.header.pub_id = event_data["header"]["pub_id"]
+            event.header.token = event_data["header"]["token"]
+            event.header.pub_time = event_data["header"]["pub_time"]
+            event.header.event_id = event_data["header"]["event_id"]
+
+            # Set payload
+            payload = event_data["payload"]
+
+            event.payload = json.dumps(payload, ensure_ascii=False).encode('utf-8')
+
+            # Serialize to bytes 
+            data = event.SerializeToString()
+            # print(data)
+
+            # Convert to hex string
+            hex_output = data.hex()
+
+            # convert hex_output back to bytes
+            # bytes_output = bytes.fromhex(hex_output)
+
+            self.protobuf_output_text.SetValue(hex_output)
+        except Exception as e:
+            # Handle any errors in conversion and show a simple error message
+            self.protobuf_output_text.SetValue(f"Error: {str(e)}")
+
+
     def test_https_performance(self, event):
         try:
             url = self.url_text.GetValue()
@@ -142,24 +204,22 @@ class PerformanceTester(wx.Frame):
         try:
             broker = self.broker_text.GetValue()
             topic = self.topic_text.GetValue()
-            raw_payload = self.payload_text.GetValue()
-    
-            # Convert JSON string to Python dict
-            import json
-            payload_data = json.loads(raw_payload)
+            message = bytes.fromhex(self.payload_text.GetValue())
 
-            # Populate protobuf message from payload_data
-            wrapper = payload_pb2.EventsWrapper()
-            for event_data in payload_data["events"]:
-                event = wrapper.events.add()
-                event.header.token = event_data["header"]["token"]
-                event.header.event_type = event_data["header"]["event_type"]
-                event.header.timestamp = event_data["header"]["timestamp"]
-                event.payload = event_data["payload"]
-            
-            # Serialize the message to a byte string (compress using protobuf)
-            protobuf_payload = wrapper.SerializeToString()
-            print(f"Protobuf payload: {protobuf_payload}")
+            # event = event_pb2.Event()
+
+            # # Populate header
+            # event.header.event_type = "DEFAULT"
+            # event.header.pub_id = "v_1"
+            # event.header.token = "w3b_MV8xNjk1MTA5MjI5X1FOeEl8YloqWG5tZg"  
+            # event.header.pub_time = 1695566547655
+            # event.header.event_id = "1234abcd"
+
+            # # Set payload
+            # event.payload = b"{\"name\": \"John Doe\", \"page\": \"Home\"}" 
+
+            # # Serialize to bytes 
+            # data = event.SerializeToString()
 
             try:
                 loop_count = int(self.mqtt_loop_count_text.GetValue())
@@ -178,7 +238,7 @@ class PerformanceTester(wx.Frame):
             try:
                 client.connect(broker)
             except Exception as e:
-                self.mqtt_console.AppendText(f"Failed to connect to the broker: {e}")
+                self.mqtt_console.AppendText(f"Failed to connect to the broker: {e} \n")
                 return
 
             total_time = 0
@@ -186,7 +246,7 @@ class PerformanceTester(wx.Frame):
                 start_time = time.time()
                 
                 # Publish to the topic
-                result = client.publish(topic, protobuf_payload)
+                result = client.publish(topic, message)
                 if result.rc != mqtt.MQTT_ERR_SUCCESS:
                     self.mqtt_console.AppendText(f"Failed to publish message: {mqtt.error_string(result.rc)} \n")
                     client.disconnect()
