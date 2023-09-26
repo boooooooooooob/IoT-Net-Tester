@@ -2,6 +2,12 @@
 
 A cross-platform tool that enables performance testing for HTTPS and MQTT protocols and provides an interactive GUI to convert JSON data to Protocol Buffers (protobuf).
 
+The Performance Tester Tool is a lightweight, purpose-built application designed to facilitate testing of IoT devices that communicate via HTTP and MQTT protocols. The motivation behind the creation of this tool emerged from a few key needs:
+
+1. `IoT Device Testing`: A primary objective was to evaluate IoT devices' communication capabilities, especially those interacting through HTTP and MQTT.
+2. `Simplicity & Lightweight`: While tools like Postman offer robust functionality, they often come with a complexity and heft that might be overwhelming for simple testing needs. This tool aims to bridge the gap by providing essential testing functions without the overhead of more extensive platforms.
+3. `Compatibility with w3bstream IoTex`: w3bstream IoTex is a specialized platform that offers custom HTTP and MQTT services. A unique challenge faced was the specific message format constraints imposed by w3bstream, especially for MQTT communications. This tool seamlessly integrates a converter that transforms user-inputted JSON data into the Protocol Buffers (protobuf) format, ensuring compatibility with the w3bstream's requirements.
+
 ## Features
 
 - `HTTPS Testing`: Perform POST requests and measure the average response time.
