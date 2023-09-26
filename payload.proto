@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+message Event {
+    message Header {
+        string token = 1;
+        string event_type = 2;
+        int64 timestamp = 3;
+    }
+
+    Header header = 1;
+    string payload = 2;
+}
+
+message EventsWrapper {
+    repeated Event events = 1;
+}

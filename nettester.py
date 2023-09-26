@@ -2,6 +2,7 @@ import wx
 import requests
 import time
 import paho.mqtt.client as mqtt
+import payload_pb2
 
 class PerformanceTester(wx.Frame):
     def __init__(self):
@@ -141,7 +142,25 @@ class PerformanceTester(wx.Frame):
         try:
             broker = self.broker_text.GetValue()
             topic = self.topic_text.GetValue()
-            payload = self.payload_text.GetValue()
+            raw_payload = self.payload_text.GetValue()
+    
+            # Convert JSON string to Python dict
+            import json
+            payload_data = json.loads(raw_payload)
+
+            # Populate protobuf message from payload_data
+            wrapper = payload_pb2.EventsWrapper()
+            for event_data in payload_data["events"]:
+                event = wrapper.events.add()
+                event.header.token = event_data["header"]["token"]
+                event.header.event_type = event_data["header"]["event_type"]
+                event.header.timestamp = event_data["header"]["timestamp"]
+                event.payload = event_data["payload"]
+            
+            # Serialize the message to a byte string (compress using protobuf)
+            protobuf_payload = wrapper.SerializeToString()
+            print(f"Protobuf payload: {protobuf_payload}")
+
             try:
                 loop_count = int(self.mqtt_loop_count_text.GetValue())
             except ValueError:
@@ -167,7 +186,7 @@ class PerformanceTester(wx.Frame):
                 start_time = time.time()
                 
                 # Publish to the topic
-                result = client.publish(topic, payload)
+                result = client.publish(topic, protobuf_payload)
                 if result.rc != mqtt.MQTT_ERR_SUCCESS:
                     self.mqtt_console.AppendText(f"Failed to publish message: {mqtt.error_string(result.rc)} \n")
                     client.disconnect()
