@@ -20,7 +20,7 @@ The Performance Tester Tool is a lightweight, purpose-built application designed
 
 - `Protobuf Conversion`: Convert user-inputted JSON data to compressed Protocol Buffers format.
 
-![Protobuf Tab](./images/converter.png)
+![Protobuf Tab](./images/Converter.png)
 
 ## Prerequisites
 
