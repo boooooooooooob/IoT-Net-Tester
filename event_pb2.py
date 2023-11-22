@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x65vent.proto\"_\n\x06Header\x12\x12\n\nevent_type\x18\x01 \x01(\t\x12\x0e\n\x06pub_id\x18\x02 \x01(\t\x12\r\n\x05token\x18\x03 \x01(\t\x12\x10\n\x08pub_time\x18\x04 \x01(\x03\x12\x10\n\x08\x65vent_id\x18\x05 \x01(\t\"1\n\x05\x45vent\x12\x17\n\x06header\x18\x01 \x01(\x0b\x32\x07.Header\x12\x0f\n\x07payload\x18\x02 \x01(\x0c\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x65vent.proto\">\n\x06Header\x12\x12\n\nevent_type\x18\x01 \x01(\t\x12\r\n\x05token\x18\x03 \x01(\t\x12\x11\n\ttimestamp\x18\x04 \x01(\x03\"1\n\x05\x45vent\x12\x17\n\x06header\x18\x01 \x01(\x0b\x32\x07.Header\x12\x0f\n\x07payload\x18\x02 \x01(\x0c\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -22,7 +22,7 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   _globals['_HEADER']._serialized_start=15
-  _globals['_HEADER']._serialized_end=110
-  _globals['_EVENT']._serialized_start=112
-  _globals['_EVENT']._serialized_end=161
+  _globals['_HEADER']._serialized_end=77
+  _globals['_EVENT']._serialized_start=79
+  _globals['_EVENT']._serialized_end=128
 # @@protoc_insertion_point(module_scope)

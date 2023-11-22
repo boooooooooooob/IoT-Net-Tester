@@ -137,12 +137,12 @@ class PerformanceTester(wx.Frame):
 
             event = event_pb2.Event()
 
+            print(event_data["header"])
+
             # Populate header
             event.header.event_type = event_data["header"]["event_type"]
-            event.header.pub_id = event_data["header"]["pub_id"]
             event.header.token = event_data["header"]["token"]
-            event.header.pub_time = event_data["header"]["pub_time"]
-            event.header.event_id = event_data["header"]["event_id"]
+            event.header.timestamp = event_data["header"]["timestamp"]
 
             # Set payload
             payload = event_data["payload"]
